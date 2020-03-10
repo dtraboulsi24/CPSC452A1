@@ -1,17 +1,91 @@
 import sys
+import math
 
 class CipherInterface:
     def __init__(self):
         self.key = None
 
     def setKey(self, key):
+        self.keyLength = len(key)
         self.key = key
 
 class PLF(CipherInterface):
     pass
 
+
 class RTS(CipherInterface):
-    pass
+    def __init__(self):
+        super(RTS, self).__init__()
+
+    # Takes in plaintext and encrypts using Row Transposition Cipher with a key to read the rows
+    # Returns ciphered text 
+    # example input: attack postponed until two am
+    # example key: "3421567"
+    # example output: TTNAAPTMTSUOAODWCOIXKNLXPETX
+    # To run this example: py cipher.py RTS "3421567" enc input.txt output.txt
+    def encrypt(self, text):
+        cipher = ''
+
+        # clean up plaintext by removing spaces and ensuring uppercase
+        text = text.replace(" ", "").upper()
+
+        # number of cols is key length
+        cols = self.keyLength
+        # number of rows is len of plaintext divided by len of key
+        rows = int(math.ceil(len(text) / self.keyLength))
+
+        # init cipher array, put in X's for extra space
+        cipherArray = [['X'] * cols for i in range(rows)]
+        
+        # overwrite array with the plaintext message
+        # goes through columns first setting values vertically 
+        counter  = 0
+        for i in range(rows):
+            for j in range(cols):
+                if counter >= len(text):
+                    break
+                cipherArray[i][j] = text[counter]
+                counter += 1
+        
+        # read columns from top to bottom to get ciphertext
+        for i in range(self.keyLength):
+            for j in range(rows):
+                cipher += cipherArray[j][int(self.key[i]) - 1]
+        return cipher
+
+    # Takes in ciphered text and decrypts using Row Transposition Cipher with a key to read the rows
+    # Returns plaintext 
+    # example input: TTNAAPTMTSUOAODWCOIXKNLXPETX
+    # example key: "3421567"
+    # example output: ATTACKPOSTPONEDUNTILTWOAMXXX
+    # To run this example: py cipher.py RTS "3421567" dec output.txt input.txt
+    def decrypt(self, cipher):
+        text = ''
+
+        # number of cols is key length
+        cols = self.keyLength
+        # number of rows is len of plaintext divided by len of key
+        rows = int(math.ceil(len(cipher) / self.keyLength))
+
+        # init cipher array, put in X's for extra space
+        cipherArray = [['X'] * cols for i in range(rows)]
+
+        # overwrite array with ciphertext, invert rows and cols order compared to encrypt
+        # goes through rows first setting the values horizontally
+        counter = 0
+        for i in range(cols):
+            for j in range(rows):
+                cipherArray[j][i] = cipher[counter]
+                counter += 1
+
+        # construct the plaintext by accessing the row sequentially, and the col via the key
+        for i in range(rows):
+            for j in range(cols):
+                # get current column by finding the indicy in the key
+                currentCol = self.key.find(str(j+1))
+                text += cipherArray[i][currentCol]
+        return text
+
 
 class RFC(CipherInterface):
     pass
