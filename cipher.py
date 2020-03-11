@@ -141,8 +141,55 @@ class RFC(CipherInterface):
         cipher = cipher.replace(" ", "")
         return cipher
 
+    # Takes in a ciphertext and constructs the plaintext using Railfence Cipher decryption
+    # example input: TSASHITTISE
+    # example key: 3
+    # example output: THISISATEST 
+    # returns plaintext
     def decrypt(self, cipher):
-        pass
+        text = ''
+ 
+        # clean up ciphertext by removing spaces and ensuring uppercase
+        cipher = cipher.replace(" ", "").upper()
+ 
+        # set rows to be key size
+        rows = int(self.key)
+        # set cols to be ciphertext size / key size rounded down
+        cols = math.floor(len(cipher)/int(self.key))
+ 
+        # now find partially filled cols and how many letters are left in them
+        leftover = len(cipher) % int(self.key)
+        # print("leftover: ", leftover)
+        # set blank railArray, taking into account leftover letters
+        if leftover != 0:
+            cols += int(self.key) % leftover
+        railArray = [[' '] * cols for i in range(rows)]
+        # print(railArray)
+        
+        # loop through cols first then rows, assigning chars from the message into the rail array 
+        row, col = 0, 0
+        # loop through the cipher, setting the chars in the railArray across rows then columns
+        for i in range(len(cipher)):
+            railArray[row][col] = cipher[i]
+            if leftover != 0 and col != int(self.key): 
+                # print("col before ", col)
+                col += 1
+                # print("col after ", col)
+            elif leftover == 0 and col != (int(self.key) - 1):
+                 col += 1
+            else:
+                col = 0
+                row += 1
+        # print(railArray)
+ 
+        # construct the plaintext by reading rows first then cols
+        for i in range(cols):
+           for j in range(rows):
+                if railArray != '\n':
+                    text += railArray[j][i]
+        # print(text)
+        return text
+
 
 class VIG(CipherInterface):
     pass
