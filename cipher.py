@@ -42,12 +42,14 @@ class RTS(CipherInterface):
         # overwrite array with the plaintext message
         # goes through columns first setting values vertically 
         counter  = 0
-        for i in range(rows):
+        i = 0
+        while i < rows:
             for j in range(cols):
                 if counter >= len(text):
                     break
                 cipherArray[i][j] = text[counter]
                 counter += 1
+            i += 1
         
         # read columns from top to bottom to get ciphertext
         for i in range(self.keyLength):
