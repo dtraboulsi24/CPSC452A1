@@ -20,22 +20,24 @@ class RTS(CipherInterface):
     # Takes in plaintext and encrypts using Row Transposition Cipher with a key to read the rows
     # Returns ciphered text 
     # example input: attack postponed until two am
-    # example key: "3421567"
-    # example output: TTNAAPTMTSUOAODWCOIXKNLXPETX
-    # To run this example: py cipher.py RTS "3421567" enc input.txt output.txt
+    # example key: 3421567
+    # example output: TTNAAPTMTSUOAODWCOIZKNLZPETZ
     def encrypt(self, text):
         cipher = ''
 
         # clean up plaintext by removing spaces and ensuring uppercase
-        text = text.replace(" ", "").upper()
+        text = text.replace(" ", "")
+        text = text.upper()
 
-        # number of cols is key length
-        cols = self.keyLength
+        
         # number of rows is len of plaintext divided by len of key
         rows = int(math.ceil(len(text) / self.keyLength))
 
-        # init cipher array, put in X's for extra space
-        cipherArray = [['X'] * cols for i in range(rows)]
+        # number of cols is key length
+        cols = self.keyLength
+
+        # init cipher array, put in Z's for extra space
+        cipherArray = [['Z'] * cols for i in range(rows)]
         
         # overwrite array with the plaintext message
         # goes through columns first setting values vertically 
@@ -55,20 +57,25 @@ class RTS(CipherInterface):
 
     # Takes in ciphered text and decrypts using Row Transposition Cipher with a key to read the rows
     # Returns plaintext 
-    # example input: TTNAAPTMTSUOAODWCOIXKNLXPETX
-    # example key: "3421567"
-    # example output: ATTACKPOSTPONEDUNTILTWOAMXXX
-    # To run this example: py cipher.py RTS "3421567" dec output.txt input.txt
+    # example input: TTNAAPTMTSUOAODWCOIZKNLZPETZ
+    # example key: 3421567
+    # example output: ATTACKPOSTPONEDUNTILTWOAMZZZ
+    # To run this example: py cipher.py RTS 3421567 dec output.txt input.txt
     def decrypt(self, cipher):
         text = ''
 
-        # number of cols is key length
-        cols = self.keyLength
+        # clean up spaces and uppercase, just in case
+        cipher = cipher.replace(" ", "")
+        cipher = cipher.upper()
+
         # number of rows is len of plaintext divided by len of key
         rows = int(math.ceil(len(cipher) / self.keyLength))
 
-        # init cipher array, put in X's for extra space
-        cipherArray = [['X'] * cols for i in range(rows)]
+        # number of cols is key length
+        cols = self.keyLength
+
+        # init cipher array, put in Z's for extra space
+        cipherArray = [['Z'] * cols for i in range(rows)]
 
         # overwrite array with ciphertext, invert rows and cols order compared to encrypt
         # goes through rows first setting the values horizontally
@@ -88,7 +95,54 @@ class RTS(CipherInterface):
 
 
 class RFC(CipherInterface):
-    pass
+    def __init__(self):
+        super(RFC, self).__init__()
+    
+
+    # Encrypt using Railfence cipher. Take in plaintext message and a "Rail" key size
+    # iterate through message, building cipher according to key size
+    # return ciphertext
+    # example input: this is a test
+    # example key: 3
+    # example output: TSASHITTISE
+    def encrypt(self, text):
+        cipher = ''
+        
+        # clean up plaintext by removing spaces and ensuring uppercase
+        text = text.replace(" ", "").upper()
+        # set rows to be key size
+        rows = int(self.key)
+        # set cols to be plaintext size / key size rounded up
+        cols = math.ceil(len(text)/int(self.key))
+        #  set blank railArray
+        railArray = [[' '] * cols for i in range(rows)]
+        # print(railArray)
+
+        #  loop through rows first then cols, assigning chars from the message into the rail array 
+        row, col = 0, 0
+        # loop through the message, setting the chars in the railArray across rows then columns
+        for i in range(len(text)):
+            railArray[row][col] = text[i]
+            if row != int(self.key) - 1: 
+                row += 1
+            else:
+                row = 0
+                col += 1
+        # print("Rail Array: ", railArray)
+
+        # read the railArray into a string to become the ciphertext
+        for i in range(rows):
+            for j in range(cols):
+                if railArray != '\n':
+                    cipher += railArray[i][j]
+                
+        # print(cipher)
+        # clean up spaces 
+        cipher = cipher.replace(" ", "")
+        return cipher
+
+    def decrypt(self, cipher):
+        pass
 
 class VIG(CipherInterface):
     pass
