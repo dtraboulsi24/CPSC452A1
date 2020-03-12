@@ -62,7 +62,6 @@ class RTS(CipherInterface):
     # example input: TTNAAPTMTSUOAODWCOIZKNLZPETZ
     # example key: 3421567
     # example output: ATTACKPOSTPONEDUNTILTWOAMZZZ
-    # To run this example: py cipher.py RTS 3421567 dec output.txt input.txt
     def decrypt(self, cipher):
         text = ''
 
@@ -194,7 +193,94 @@ class RFC(CipherInterface):
 
 
 class VIG(CipherInterface):
-    pass
+    def __init__(self):
+        super(VIG, self).__init__()
+ 
+    # encrypt a plaintext message using the Vigenre's cipher. The key is constructed 
+    # by duplicating itself until the massage length is met. 
+    # Then the ascii of the key and message char's are added and modulo by 26 and converted to uppercase.
+    # This result is then appended to the ciphertext
+    # example input: hello world
+    # example key: WILL
+    # example output: DMWWKEZCHL
+    def encrypt(self, text):
+        cipher = ''
+ 
+        # clean up plaintext
+        text = text.replace(" ", "")
+        text = text.upper()
+        
+        # clean up key
+        self.key = self.key.replace(" ", "")
+        self.key = self.key.upper()
+ 
+        # print("key before: ", self.key)
+        # print("Key length: ", self.keyLength)
+        # print("text length: ", len(text))
+ 
+        # construct normal, repeating key
+        # loop until key length matches plaintext length
+        # constructing key from itself, and resetting index
+        # when the index is at the end of the key
+        i = 0
+        while(self.keyLength < len(text)):
+            if (i == self.keyLength):
+                i = 0
+            self.key += self.key[i]
+            self.keyLength = len(self.key)
+            i += 1
+ 
+        # print("key after: ", self.key)
+        # print("Key length: ", self.keyLength)    
+ 
+        # go through text and encrypt using ascii values for letters
+        # add the value of the plaintext and the key then mod 26 for alphabet, add 65 to ensure uppercase
+        for i in range(len(text)):
+            cipherChar = (ord(text[i]) + ord(self.key[i])) % 26 + 65
+            cipher += chr(cipherChar)
+        # print(cipher)
+ 
+        # construct autokey, key
+ 
+        return cipher
+ 
+    # decrypt a ciphertext message using the Vigenre's cipher. The key is constructed 
+    # by duplicating itself until the massage length is met. 
+    # Then the ascii of the key and message char's are subtracted and modulo by 26 and converted to uppercase.
+    # This result is then appended to the plaintext
+    # example input: DMWWKEZCHL
+    # example key: WILL
+    # example output: HELLOWORLD
+    def decrypt(self, cipher):
+        text = ''
+ 
+        # clean up key
+        self.key = self.key.replace(" ", "")
+        self.key = self.key.upper()
+ 
+        # print("key before: ", self.key)
+        # print("Key length: ", self.keyLength)
+        # print("text length: ", len(text))
+ 
+        # construct normal, repeating key
+        # loop until key length matches plaintext length
+        # constructing key from itself, and resetting index
+        # when the index is at the end of the key
+        i = 0
+        while(self.keyLength < len(cipher)):
+            if (i == self.keyLength):
+                i = 0
+            self.key += self.key[i]
+            self.keyLength = len(self.key)
+            i += 1
+ 
+        # go through cipher and decrypt using ascii values for letters
+        # subtract the value of the ciphertext and the key then mod 26 for alphabet, add 65 to ensure uppercase
+        for i in range(len(cipher)):
+            plainChar = (ord(cipher[i]) - ord(self.key[i])) % 26 + 65
+            text += chr(plainChar)
+        # print(text)
+        return cipher
 
 class CES(CipherInterface):
     def __init__(self):
