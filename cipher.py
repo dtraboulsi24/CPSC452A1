@@ -240,8 +240,6 @@ class VIG(CipherInterface):
             cipher += chr(cipherChar)
         # print(cipher)
  
-        # construct autokey, key
- 
         return cipher
  
     # decrypt a ciphertext message using the Vigenre's cipher. The key is constructed 
@@ -280,7 +278,7 @@ class VIG(CipherInterface):
             plainChar = (ord(cipher[i]) - ord(self.key[i])) % 26 + 65
             text += chr(plainChar)
         # print(text)
-        return cipher
+        return text
 
 class CES(CipherInterface):
     def __init__(self):
