@@ -1,17 +1,104 @@
 import sys
-import math
+import string
 
 class CipherInterface:
     def __init__(self):
         self.key = None
 
     def setKey(self, key):
-        self.keyLength = len(key)
         self.key = key
 
 class PLF(CipherInterface):
-    pass
+    def __init__(self):
+        super(PLF, self).__init__()
 
+    def encode(self, lists, key):
+        output = []
+        print("KEY:" + str(key))
+        print("LISTS: " + str(lists))
+        for listRow in range(len(lists)):
+            print("Listrow: " + str(listRow))
+            rowOut = []
+            for listColumn in range(len(lists[listRow])):
+                print(range(len(lists[listRow])))
+                rowCol = []
+                for keyRow in range(len(key)):
+                    print(str(len(key)))
+                    for keyColumn in range(0, 5):
+                        print("Keyrow:" + str(keyRow))
+                        print(str(lists[listRow][listColumn]) + " = " + str(key[keyRow - 1][keyColumn]))
+                        if lists[listRow][listColumn] == key[keyRow - 1][keyColumn]:
+                            rowCol.append(keyRow - 1)
+                            rowCol.append(keyColumn)
+                rowOut.append(rowCol)
+            print(rowOut)
+            output.append(rowOut)
+        return output
+
+    def decode(self, output, matrix):
+        final = []
+        for rowOut in output:
+            for rowCol in rowOut:
+                final.append(matrix[rowCol[0]][rowCol[1]])
+        return final
+
+    def shift(self, output, offset):
+        print(str(output))
+        for rowOut in output:
+            #print(str(rowOut))
+            if rowOut[0][0] == rowOut[1][0]:
+                rowOut[0][0] = (rowOut[0][0] + offset) % 5
+                rowOut[1][0] = (rowOut[1][0] + offset) % 5
+            else:
+                rowOut[0][1] = rowOut[1][1]
+            if rowOut[0][1] == rowOut[1][1]:
+                rowOut[0][1] = (rowOut[0][1] + offset) % 5
+                rowOut[1][1] = (rowOut[1][1] + offset) % 5
+            else:
+                rowOut[1][1] = rowOut[0][1]
+            for row in rowOut:
+                print(row)
+                for col in range(len(row)):
+                    print(row[col])
+                    if row[col] < 0:
+                        row[col] = 5 + row[col]
+        return output
+
+    def crypt(self, text, offset):
+        text = text.lower().replace(" ", "")
+        key = self.key.lower().replace('j', 'i')
+        key = ''.join(sorted(set(key), key=key.index))
+        alphabet_string = string.ascii_lowercase.replace('j', '')
+        for char in key:
+            alphabet_string = alphabet_string.replace(char, '')
+        key = key + alphabet_string
+        n = 5
+        matrix = [key[i:i+n] for i in range(0, len(key), n)]
+        
+        if len(text) % 2 is not 0:
+            text = text + 'x'
+
+        print(str(text))
+        n = 2
+        for i in range(0, len(text), n):
+            if text[i] == text[i+1]:
+                text = text[i:] + 'x' + text[:i]
+        
+        lists = [text[i:i+n] for i in range(0, len(text), n)]
+        print(matrix)
+
+        print(str(lists))
+        output = self.encode(lists, matrix)
+        output = self.shift(output, offset)
+        output = self.decode(output, matrix)
+        
+        return str(''.join(output))
+
+    def encrypt(self, text):
+        return self.crypt(text, 1)
+
+    def decrypt(self, text):
+        return self.crypt(text, -1)
 
 class RTS(CipherInterface):
     def __init__(self):
@@ -93,7 +180,6 @@ class RTS(CipherInterface):
                 currentCol = self.key.find(str(j+1))
                 text += cipherArray[i][currentCol]
         return text
-
 
 class RFC(CipherInterface):
     def __init__(self):
@@ -191,7 +277,6 @@ class RFC(CipherInterface):
         # print(text)
         return text
 
-
 class VIG(CipherInterface):
     def __init__(self):
         super(VIG, self).__init__()
@@ -284,9 +369,8 @@ class CES(CipherInterface):
     def __init__(self):
         super(CES, self).__init__()
 
-    def encrypt(self, text):
+    def crypt(self, text, shift):
         cipher = ''
-        shift = int(self.key)
         for char in text: 
             if char == ' ':
                 cipher = cipher + char
@@ -296,17 +380,11 @@ class CES(CipherInterface):
                 cipher = cipher + chr((ord(char) + shift - 97) % 26 + 97)
         return cipher
 
+    def encrypt(self, text):
+        return self.crypt(text, int(self.key))
+
     def decrypt(self, text):
-        cipher = ''
-        shift = int(self.key)
-        for char in text: 
-            if char == ' ':
-                cipher = cipher + char
-            elif  char.isupper():
-                cipher = cipher + chr((ord(char) - shift - 65) % 26 + 65)
-            else:
-                cipher = cipher + chr((ord(char) - shift - 97) % 26 + 97)
-        return cipher
+        return self.crypt(text, -int(self.key))
 
 class HIL(CipherInterface):
     pass
@@ -320,6 +398,7 @@ def fileRead(inputFile):
 
 def fileWrite(outputFile, text):
     file = open(outputFile, "w")
+    print(text)
     file.write(text)
 
 def main():
@@ -357,8 +436,7 @@ def main():
     else:
         print("Choose enc/dec")
         exit
-    
-    fileWrite(outputFile, text)
+    fileWrite(outputFile, str(text))
 
 
 if __name__ == "__main__":
@@ -366,3 +444,4 @@ if __name__ == "__main__":
         main()
     else:
         print("Argument List Length Error")
+
